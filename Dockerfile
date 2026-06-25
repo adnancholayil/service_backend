@@ -27,6 +27,6 @@ COPY --from=builder /usr/src/app/dist ./dist
 # Create upload directories inside container
 RUN mkdir -p uploads logs
 
-EXPOSE 4000
+EXPOSE 10000
 
 CMD ["node", "dist/server.js"]

@@ -52,10 +52,16 @@ export const resolvers = {
     // --- Providers ---
     providers: async (_parent: any, args: any) => {
       const { longitude, latitude, maxDistance, category } = args;
-      return providerService.getProvidersNear(longitude, latitude, maxDistance, category);
+      if (longitude !== undefined && latitude !== undefined && longitude !== 0 && latitude !== 0) {
+        return providerService.getProvidersNear(longitude, latitude, maxDistance, category);
+      }
+      return providerService.getTopProviders(category);
     },
     providerProfile: async (_parent: any, args: any) => {
       return providerRepository.findByUserId(args.userId);
+    },
+    providerDetails: async (_parent: any, args: any) => {
+      return providerRepository.findById(args.id);
     },
     providerReviews: async (_parent: any, args: any) => {
       return providerService.getProviderReviews(args.providerUserId);
@@ -72,6 +78,15 @@ export const resolvers = {
     },
     serviceDetails: async (_parent: any, args: any) => {
       return serviceRepository.findById(args.id);
+    },
+    globalServices: async (_parent: any, args: any) => {
+      // Find category ID from slug if it's not 'all' and not an ObjectId
+      let categoryId = args.category;
+      if (categoryId && categoryId !== 'all' && !categoryId.match(/^[0-9a-fA-F]{24}$/)) {
+        const cat = await categoryRepository.findOne({ slug: categoryId });
+        if (cat) categoryId = cat._id.toString();
+      }
+      return serviceRepository.searchGlobal(categoryId, args.search);
     },
 
     // --- Bookings ---

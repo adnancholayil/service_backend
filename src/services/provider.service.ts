@@ -50,6 +50,11 @@ export class ProviderService {
     return provider;
   }
 
+  async getTopProviders(category?: string): Promise<IProvider[]> {
+    const result = await this.providerRepository.findTopRated(category);
+    return result.data;
+  }
+
   async getProvidersNear(longitude: number, latitude: number, maxDistance?: number, category?: string): Promise<IProvider[]> {
     const result = await this.providerRepository.findNearLocation(longitude, latitude, maxDistance, category);
     return result.data;

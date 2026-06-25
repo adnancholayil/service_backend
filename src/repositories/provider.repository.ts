@@ -16,6 +16,33 @@ export class ProviderRepository extends BaseRepository<IProvider> {
     return query.exec();
   }
 
+  async findTopRated(
+    category?: string,
+    limit = 20,
+    page = 1
+  ): Promise<{ data: IProvider[]; total: number }> {
+    const filter: any = {
+      verificationStatus: VerificationStatus.VERIFIED,
+    };
+
+    if (category) {
+      filter.category = category;
+    }
+
+    const data = await this.model
+      .find(filter)
+      .sort({ rating: -1, reviewsCount: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate('user', '-password')
+      .populate('category')
+      .exec();
+
+    const total = await this.model.countDocuments(filter);
+
+    return { data, total };
+  }
+
   async findNearLocation(
     longitude: number,
     latitude: number,

@@ -214,7 +214,8 @@ export const typeDefs = `#graphql
     me: User
 
     # Providers
-    providers(longitude: Float!, latitude: Float!, maxDistance: Float, category: ID): [Provider!]!
+    providers(longitude: Float, latitude: Float, maxDistance: Float, category: ID): [Provider!]!
+    providerDetails(id: ID!): Provider
     providerProfile(userId: ID!): Provider
     providerReviews(providerUserId: ID!): [Review!]!
 
@@ -224,6 +225,7 @@ export const typeDefs = `#graphql
     # Services
     services(providerId: ID!): [Service!]!
     serviceDetails(id: ID!): Service
+    globalServices(category: ID, search: String): [Service!]!
 
     # Bookings
     bookings: [Booking!]!

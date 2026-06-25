@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { upload } from '../middlewares/upload.middleware';
-import { cloudinaryService } from '../services/cloudinary.service';
+import path from 'path';
 import { authenticate } from '../middlewares/auth.middleware';
 import { errorHandler } from '../middlewares/error.middleware';
 import { ValidationError } from '../utils/errors';
@@ -36,6 +36,9 @@ export const loadExpress = (app: Express): void => {
   });
   app.use('/api/', limiter);
 
+  // Serve uploaded files statically
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
   // Health check endpoint
   app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({
@@ -56,15 +59,7 @@ export const loadExpress = (app: Express): void => {
           throw new ValidationError('Please upload an image file');
         }
 
-        // Upload to Cloudinary
-        const imageUrl = await cloudinaryService.uploadImage(req.file.path, 'servicehub/images');
-        
-        // Remove temp file asynchronously
-        import('fs').then((fs) => {
-          if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-          }
-        });
+        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
         res.status(200).json({
           status: 'success',

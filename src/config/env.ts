@@ -7,7 +7,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(10000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   MONGO_URI: z.string().min(1, 'MONGO_URI is required'),
-  REDIS_URI: z.string().default('redis://localhost:6379'),
+  REDIS_URI: z.string().optional(),
   JWT_ACCESS_SECRET: z.string().min(1, 'JWT_ACCESS_SECRET is required'),
   JWT_REFRESH_SECRET: z.string().min(1, 'JWT_REFRESH_SECRET is required'),
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),

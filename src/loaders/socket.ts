@@ -14,17 +14,19 @@ export const loadSocket = (httpServer: HttpServer): Server => {
   });
 
   // Setup Redis Adapter for multi-instance scaling
-  try {
-    const pubClient = redis;
-    const subClient = redis.duplicate();
-    subClient.on('error', (err) => {
-      logger.error(`Socket.IO Redis subClient error: ${err.message}`);
-    });
+  if (redis) {
+    try {
+      const pubClient = redis;
+      const subClient = redis.duplicate();
+      subClient.on('error', (err) => {
+        logger.error(`Socket.IO Redis subClient error: ${err.message}`);
+      });
 
-    io.adapter(createAdapter(pubClient, subClient));
-    logger.info('Socket.IO Redis adapter configured successfully');
-  } catch (err: any) {
-    logger.error(`Failed to configure Socket.IO Redis adapter: ${err.message}. Running without Redis cluster support.`);
+      io.adapter(createAdapter(pubClient, subClient));
+      logger.info('Socket.IO Redis adapter configured successfully');
+    } catch (err: any) {
+      logger.error(`Failed to configure Socket.IO Redis adapter: ${err.message}. Running without Redis cluster support.`);
+    }
   }
 
   // Bind Socket connection events handler

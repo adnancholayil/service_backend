@@ -1,0 +1,308 @@
+export const typeDefs = `#graphql
+  enum UserRole {
+    CUSTOMER
+    PROVIDER
+    ADMIN
+  }
+
+  enum BookingStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+  }
+
+  enum VerificationStatus {
+    PENDING
+    VERIFIED
+    REJECTED
+  }
+
+  enum DisputeStatus {
+    PENDING
+    RESOLVED
+    CANCELLED
+  }
+
+  type Location {
+    type: String!
+    coordinates: [Float!]!
+  }
+
+  input LocationInput {
+    coordinates: [Float!]!
+  }
+
+  type User {
+    id: ID!
+    name: String!
+    email: String!
+    role: UserRole!
+    isEmailVerified: Boolean!
+    avatar: String
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Provider {
+    id: ID!
+    user: User!
+    businessName: String!
+    description: String!
+    category: Category!
+    services: [Service!]!
+    location: Location!
+    address: String!
+    verificationStatus: VerificationStatus!
+    rating: Float!
+    reviewsCount: Int!
+    banner: String
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Category {
+    id: ID!
+    name: String!
+    slug: String!
+    icon: String
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Service {
+    id: ID!
+    provider: Provider!
+    category: Category!
+    name: String!
+    description: String!
+    price: Float!
+    duration: Int
+    images: [String!]!
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type BookingLocation {
+    address: String!
+    coordinates: [Float!]!
+  }
+
+  input BookingLocationInput {
+    address: String!
+    coordinates: [Float!]!
+  }
+
+  type Booking {
+    id: ID!
+    customer: User!
+    provider: Provider!
+    service: Service!
+    bookingDate: String!
+    status: BookingStatus!
+    location: BookingLocation!
+    totalPrice: Float!
+    notes: String
+    paymentStatus: String!
+    paymentDetails: String
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Review {
+    id: ID!
+    booking: Booking!
+    customer: User!
+    provider: Provider!
+    rating: Int!
+    comment: String
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Conversation {
+    id: ID!
+    participants: [User!]!
+    lastMessage: Message
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Message {
+    id: ID!
+    conversation: ID!
+    sender: User!
+    text: String!
+    attachments: [String!]!
+    readBy: [ID!]!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Notification {
+    id: ID!
+    recipient: User!
+    sender: User
+    title: String!
+    message: String!
+    type: String!
+    read: Boolean!
+    link: String
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Dispute {
+    id: ID!
+    booking: Booking!
+    raisedBy: User!
+    reason: String!
+    status: DisputeStatus!
+    resolutionDetails: String
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type Banner {
+    id: ID!
+    title: String!
+    imageUrl: String!
+    link: String
+    isActive: Boolean!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type AuthPayload {
+    user: User!
+    accessToken: String!
+    refreshToken: String!
+  }
+
+  type TokenPayload {
+    accessToken: String!
+    refreshToken: String!
+  }
+
+  type DashboardStats {
+    usersCount: Int!
+    bookingsCount: Int!
+    disputesCount: Int!
+    totalRevenue: Float!
+  }
+
+  type LocationUpdatedPayload {
+    providerId: ID!
+    coordinates: [Float!]!
+  }
+
+  input ProviderRegisterInput {
+    businessName: String!
+    description: String!
+    category: ID!
+    address: String!
+    coordinates: [Float!]!
+  }
+
+  type Query {
+    # Auth & Users
+    me: User
+
+    # Providers
+    providers(longitude: Float!, latitude: Float!, maxDistance: Float, category: ID): [Provider!]!
+    providerProfile(userId: ID!): Provider
+    providerReviews(providerUserId: ID!): [Review!]!
+
+    # Categories
+    categories: [Category!]!
+
+    # Services
+    services(providerId: ID!): [Service!]!
+    serviceDetails(id: ID!): Service
+
+    # Bookings
+    bookings: [Booking!]!
+    bookingDetails(id: ID!): Booking
+
+    # Chat
+    conversations: [Conversation!]!
+    messages(conversationId: ID!, limit: Int, page: Int): [Message!]!
+
+    # Notifications
+    notifications(limit: Int, page: Int): [Notification!]!
+
+    # Admin
+    adminDisputes: [Dispute!]!
+    adminDashboardStats: DashboardStats!
+  }
+
+  type Mutation {
+    # Auth
+    register(
+      name: String!
+      email: String!
+      password: String!
+      role: UserRole!
+      providerDetails: ProviderRegisterInput
+    ): AuthPayload!
+
+    login(email: String!, password: String!): AuthPayload!
+    logout: Boolean!
+    refreshToken(token: String!): TokenPayload!
+    forgotPassword(email: String!): Boolean!
+    verifyOTP(email: String!, otp: String!): Boolean!
+    resetPassword(email: String!, otp: String!, password: String!): Boolean!
+
+    # Users / Providers
+    updateLocation(longitude: Float!, latitude: Float!): Provider!
+
+    # Admin Categories CRUD
+    createCategory(name: String!, icon: String): Category!
+    updateCategory(id: ID!, name: String!, icon: String, isActive: Boolean): Category!
+    deleteCategory(id: ID!): Boolean!
+
+    # Admin Banners CRUD
+    createBanner(title: String!, imageUrl: String!, link: String): Banner!
+    updateBanner(id: ID!, title: String!, imageUrl: String!, link: String, isActive: Boolean): Banner!
+    deleteBanner(id: ID!): Boolean!
+
+    # Admin Dispute & Verification
+    verifyProvider(providerId: ID!, status: VerificationStatus!): Provider!
+    resolveDispute(disputeId: ID!, resolutionDetails: String!): Dispute!
+
+    # Services
+    createService(category: ID!, name: String!, description: String!, price: Float!, duration: Int, images: [String!]): Service!
+    updateService(id: ID!, name: String, description: String, price: Float, duration: Int, images: [String!], isActive: Boolean): Service!
+
+    # Bookings
+    createBooking(serviceId: ID!, bookingDate: String!, address: String!, coordinates: [Float!]!, notes: String): Booking!
+    updateBookingStatus(bookingId: ID!, status: BookingStatus!): Booking!
+
+    # Reviews
+    addReview(bookingId: ID!, rating: Int!, comment: String): Review!
+
+    # Chat
+    sendMessage(recipientId: ID!, text: String!, attachments: [String!]): Message!
+    triggerTyping(conversationId: ID!, isTyping: Boolean!): Boolean!
+
+    # Notifications
+    markAllNotificationsAsRead: Boolean!
+    markNotificationAsRead(id: ID!): Notification
+    
+    # Disputes
+    raiseDispute(bookingId: ID!, reason: String!): Dispute!
+  }
+
+  type Subscription {
+    newMessage(conversationId: ID!): Message!
+    bookingStatusChanged(userId: ID!): Booking!
+    notificationCreated(userId: ID!): Notification!
+    providerLocationUpdated(providerId: ID!): LocationUpdatedPayload!
+  }
+`;
+export default typeDefs;

@@ -1,0 +1,42 @@
+export enum UserRole {
+  CUSTOMER = 'CUSTOMER',
+  PROVIDER = 'PROVIDER',
+  ADMIN = 'ADMIN',
+}
+
+export enum BookingStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum VerificationStatus {
+  PENDING = 'PENDING',
+  VERIFIED = 'VERIFIED',
+  REJECTED = 'REJECTED',
+}
+
+export enum DisputeStatus {
+  PENDING = 'PENDING',
+  RESOLVED = 'RESOLVED',
+  CANCELLED = 'CANCELLED',
+}
+
+export const SOCKET_EVENTS = {
+  NEW_MESSAGE: 'newMessage',
+  TYPING: 'typing',
+  STOP_TYPING: 'stopTyping',
+  BOOKING_STATUS_CHANGED: 'bookingStatusChanged',
+  NOTIFICATION_CREATED: 'notificationCreated',
+  PROVIDER_LOCATION_UPDATED: 'providerLocationUpdated',
+};
+
+export const SUB_CHANNELS = {
+  NEW_MESSAGE: 'NEW_MESSAGE',
+  BOOKING_STATUS_CHANGED: 'BOOKING_STATUS_CHANGED',
+  NOTIFICATION_CREATED: 'NOTIFICATION_CREATED',
+  PROVIDER_LOCATION_UPDATED: 'PROVIDER_LOCATION_UPDATED',
+};

@@ -48,6 +48,15 @@ export const loadExpress = (app: Express): void => {
     });
   });
 
+  // Root endpoint
+  app.get('/', (req: Request, res: Response) => {
+    res.status(200).json({
+      message: 'ServiceHub API is running smoothly 🚀',
+      version: '1.0.0',
+      docs: '/graphql'
+    });
+  });
+
   // REST File Upload Endpoint
   app.post(
     '/api/upload',

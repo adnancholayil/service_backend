@@ -6,6 +6,10 @@ export const redis = new Redis(env.REDIS_URI, {
   maxRetriesPerRequest: null,
   enableReadyCheck: true,
   retryStrategy(times) {
+    if (times > 3) {
+      logger.error('Redis connection failed after 3 retries. Please configure REDIS_URI.');
+      return null; // Stop retrying
+    }
     const delay = Math.min(times * 50, 2000);
     return delay;
   },

@@ -21,9 +21,7 @@ export class ProviderRepository extends BaseRepository<IProvider> {
     limit = 20,
     page = 1
   ): Promise<{ data: IProvider[]; total: number }> {
-    const filter: any = {
-      verificationStatus: VerificationStatus.VERIFIED,
-    };
+    const filter: any = {};
 
     if (category) {
       filter.category = category;
@@ -52,7 +50,6 @@ export class ProviderRepository extends BaseRepository<IProvider> {
     page = 1
   ): Promise<{ data: IProvider[]; total: number }> {
     const filter: any = {
-      verificationStatus: VerificationStatus.VERIFIED,
       location: {
         $nearSphere: {
           $geometry: {

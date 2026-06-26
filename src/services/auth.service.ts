@@ -264,6 +264,21 @@ export class AuthService {
 
     return true;
   }
+
+  async changePassword(userId: string, oldPassword?: string, newPassword?: string): Promise<boolean> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    if (oldPassword && !(await (user as any).comparePassword(oldPassword))) {
+      throw new ValidationError('Incorrect current password');
+    }
+
+    user.password = newPassword;
+    await user.save();
+    return true;
+  }
 }
 
 export const authService = new AuthService();

@@ -171,6 +171,10 @@ export const resolvers = {
     resetPassword: async (_parent: any, args: any) => {
       return authService.resetPassword(args.email, args.otp, args.password);
     },
+    changePassword: async (_parent: any, args: any, context: any) => {
+      checkAuth(context);
+      return authService.changePassword(context.user.userId, args.oldPassword, args.newPassword);
+    },
 
     // --- Users / Providers ---
     updateLocation: async (_parent: any, args: any, context: any) => {
@@ -268,6 +272,11 @@ export const resolvers = {
       // Remove from provider services array
       provider.services = provider.services.filter(s => s.toString() !== args.id);
       await provider.save();
+      return true;
+    },
+    requestPayout: async (_parent: any, args: any, context: any) => {
+      checkRole(context, [UserRole.PROVIDER]);
+      // Mock logic: Always return true for now
       return true;
     },
     updateProviderProfile: async (_parent: any, args: any, context: any) => {

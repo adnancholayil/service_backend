@@ -270,6 +270,7 @@ export const typeDefs = `#graphql
     forgotPassword(email: String!): Boolean!
     verifyOTP(email: String!, otp: String!): Boolean!
     resetPassword(email: String!, otp: String!, password: String!): Boolean!
+    changePassword(oldPassword: String!, newPassword: String!): Boolean!
 
     # Users / Providers
     updateLocation(longitude: Float!, latitude: Float!): Provider!
@@ -292,6 +293,7 @@ export const typeDefs = `#graphql
     createService(category: ID!, name: String!, description: String!, price: Float!, duration: Int, images: [String!]): Service!
     updateService(id: ID!, name: String, description: String, price: Float, duration: Int, images: [String!], isActive: Boolean): Service!
     deleteService(id: ID!): Boolean!
+    requestPayout(amount: Float!): Boolean!
 
     # Provider
     updateProviderProfile(businessName: String, description: String, address: String): Provider!

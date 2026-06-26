@@ -209,6 +209,13 @@ export const typeDefs = `#graphql
     coordinates: [Float!]!
   }
 
+  type ProviderDashboardStats {
+    totalEarnings: Float!
+    pendingTasks: Int!
+    completedJobs: Int!
+    averageRating: Float!
+  }
+
   type Query {
     # Auth & Users
     me: User
@@ -218,6 +225,7 @@ export const typeDefs = `#graphql
     providerDetails(id: ID!): Provider
     providerProfile(userId: ID!): Provider
     providerReviews(providerUserId: ID!): [Review!]!
+    providerDashboardStats: ProviderDashboardStats!
 
     # Categories
     categories: [Category!]!
@@ -239,6 +247,8 @@ export const typeDefs = `#graphql
     notifications(limit: Int, page: Int): [Notification!]!
 
     # Admin
+    adminUsers: [User!]!
+    adminProviders: [Provider!]!
     adminDisputes: [Dispute!]!
     adminDashboardStats: DashboardStats!
   }
@@ -281,6 +291,10 @@ export const typeDefs = `#graphql
     # Services
     createService(category: ID!, name: String!, description: String!, price: Float!, duration: Int, images: [String!]): Service!
     updateService(id: ID!, name: String, description: String, price: Float, duration: Int, images: [String!], isActive: Boolean): Service!
+    deleteService(id: ID!): Boolean!
+
+    # Provider
+    updateProviderProfile(businessName: String, description: String, address: String): Provider!
 
     # Bookings
     createBooking(serviceId: ID!, bookingDate: String!, address: String!, coordinates: [Float!]!, notes: String): Booking!

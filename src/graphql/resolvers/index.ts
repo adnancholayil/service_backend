@@ -66,6 +66,10 @@ export const resolvers = {
     providerReviews: async (_parent: any, args: any) => {
       return providerService.getProviderReviews(args.providerUserId);
     },
+    providerDashboardStats: async (_parent: any, _args: any, context: any) => {
+      checkAuth(context);
+      return providerService.getDashboardStats(context.user.userId);
+    },
 
     // --- Categories ---
     categories: async () => {
@@ -121,6 +125,14 @@ export const resolvers = {
     },
 
     // --- Admin ---
+    adminUsers: async (_parent: any, _args: any, context: any) => {
+      checkRole(context, [UserRole.ADMIN]);
+      return userRepository.find({});
+    },
+    adminProviders: async (_parent: any, _args: any, context: any) => {
+      checkRole(context, [UserRole.ADMIN]);
+      return providerRepository.find({});
+    },
     adminDisputes: async (_parent: any, _args: any, context: any) => {
       checkRole(context, [UserRole.ADMIN]);
       return adminService.getAllDisputes();
@@ -241,6 +253,26 @@ export const resolvers = {
         throw new ForbiddenError('You are not authorized to update this service');
       }
       return serviceRepository.update(id, updateData);
+    },
+    deleteService: async (_parent: any, args: any, context: any) => {
+      checkRole(context, [UserRole.PROVIDER]);
+      const service = await serviceRepository.findById(args.id);
+      if (!service) {
+        throw new ValidationError('Service not found');
+      }
+      const provider = await providerRepository.findByUserId(context.user.userId);
+      if (!provider || service.provider.toString() !== provider._id.toString()) {
+        throw new ForbiddenError('You are not authorized to delete this service');
+      }
+      await serviceRepository.delete(args.id);
+      // Remove from provider services array
+      provider.services = provider.services.filter(s => s.toString() !== args.id);
+      await provider.save();
+      return true;
+    },
+    updateProviderProfile: async (_parent: any, args: any, context: any) => {
+      checkRole(context, [UserRole.PROVIDER]);
+      return providerService.updateProfile(context.user.userId, args.businessName, args.description, args.address);
     },
 
     // --- Bookings ---

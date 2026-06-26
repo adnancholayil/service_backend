@@ -1,6 +1,7 @@
 import { ProviderRepository } from '../repositories/provider.repository';
 import { ReviewRepository } from '../repositories/review.repository';
 import { UserRepository } from '../repositories/user.repository';
+import { BookingRepository } from '../repositories/booking.repository';
 import { IProvider } from '../interfaces/provider.interface';
 import { IReview } from '../interfaces/review.interface';
 import { VerificationStatus, SOCKET_EVENTS } from '../constants';
@@ -11,11 +12,13 @@ export class ProviderService {
   private providerRepository: ProviderRepository;
   private reviewRepository: ReviewRepository;
   private userRepository: UserRepository;
+  private bookingRepository: BookingRepository;
 
   constructor() {
     this.providerRepository = new ProviderRepository();
     this.reviewRepository = new ReviewRepository();
     this.userRepository = new UserRepository();
+    this.bookingRepository = new BookingRepository();
   }
 
   async updateLocation(providerUserId: string, longitude: number, latitude: number): Promise<IProvider> {
@@ -54,6 +57,21 @@ export class ProviderService {
     const result = await this.providerRepository.findTopRated(category);
     return result.data;
   }
+
+  async updateProfile(providerUserId: string, businessName?: string, description?: string, address?: string): Promise<IProvider> {
+    const provider = await this.providerRepository.findByUserId(providerUserId);
+    if (!provider) {
+      throw new NotFoundError('Provider profile not found');
+    }
+
+    if (businessName) provider.businessName = businessName;
+    if (description) provider.description = description;
+    if (address) provider.address = address;
+
+    await provider.save();
+    return provider;
+  }
+
 
   async getProvidersNear(longitude: number, latitude: number, maxDistance?: number, category?: string): Promise<IProvider[]> {
     const result = await this.providerRepository.findNearLocation(longitude, latitude, maxDistance, category);
@@ -96,6 +114,35 @@ export class ProviderService {
     });
 
     return review;
+  }
+
+  async getDashboardStats(providerUserId: string) {
+    const provider = await this.providerRepository.findByUserId(providerUserId);
+    if (!provider) {
+      throw new NotFoundError('Provider profile not found');
+    }
+
+    const bookings = await this.bookingRepository.findByProviderId(provider._id.toString());
+    
+    let totalEarnings = 0;
+    let pendingTasks = 0;
+    let completedJobs = 0;
+
+    bookings.forEach(b => {
+      if (b.status === 'COMPLETED') {
+        completedJobs++;
+        totalEarnings += b.totalPrice;
+      } else if (b.status === 'PENDING') {
+        pendingTasks++;
+      }
+    });
+
+    return {
+      totalEarnings,
+      pendingTasks,
+      completedJobs,
+      averageRating: provider.rating || 0
+    };
   }
 
   async getProviderReviews(providerUserId: string): Promise<IReview[]> {

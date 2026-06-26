@@ -140,6 +140,9 @@ export const resolvers = {
     login: async (_parent: any, args: any) => {
       return authService.login(args.email, args.password);
     },
+    googleLogin: async (_parent: any, args: any) => {
+      return authService.googleLogin(args.token, args.role);
+    },
     logout: async (_parent: any, _args: any, context: any) => {
       checkAuth(context);
       return authService.logout(context.user.userId);

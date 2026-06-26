@@ -254,6 +254,7 @@ export const typeDefs = `#graphql
     ): AuthPayload!
 
     login(email: String!, password: String!): AuthPayload!
+    googleLogin(token: String!, role: UserRole): AuthPayload!
     logout: Boolean!
     refreshToken(token: String!): TokenPayload!
     forgotPassword(email: String!): Boolean!

@@ -6,14 +6,21 @@ import { mailService } from './mail.service';
 import { UserRole, VerificationStatus } from '../constants';
 import { ValidationError, UnauthorizedError, ConflictError, NotFoundError } from '../utils/errors';
 import { IUser } from '../interfaces/user.interface';
+import { OAuth2Client } from 'google-auth-library';
+import mongoose from 'mongoose';
+import { CategoryRepository } from '../repositories/category.repository';
 
 export class AuthService {
   private userRepository: UserRepository;
   private providerRepository: ProviderRepository;
+  private categoryRepository: CategoryRepository;
+  private googleClient: OAuth2Client;
 
   constructor() {
     this.userRepository = new UserRepository();
     this.providerRepository = new ProviderRepository();
+    this.categoryRepository = new CategoryRepository();
+    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'placeholder');
   }
 
   async register(
@@ -48,11 +55,24 @@ export class AuthService {
         throw new ValidationError('Provider business details are required');
       }
 
+      let finalCategoryId = providerData.category;
+      
+      // If it's not a valid ObjectId, assume it's a new custom category name
+      if (!mongoose.Types.ObjectId.isValid(finalCategoryId)) {
+        const slug = finalCategoryId.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const newCat = await this.categoryRepository.create({
+          name: finalCategoryId,
+          slug,
+          isActive: true
+        } as any);
+        finalCategoryId = newCat._id.toString();
+      }
+
       await this.providerRepository.create({
         user: user._id,
         businessName: providerData.businessName,
         description: providerData.description,
-        category: providerData.category as any,
+        category: finalCategoryId as any,
         address: providerData.address,
         location: {
           type: 'Point',
@@ -100,6 +120,59 @@ export class AuthService {
     await user.save();
 
     return { user, accessToken, refreshToken };
+  }
+
+  async googleLogin(
+    token: string,
+    role: UserRole = UserRole.CUSTOMER
+  ): Promise<{ user: IUser; accessToken: string; refreshToken: string }> {
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID || 'placeholder',
+      });
+      const payload = ticket.getPayload();
+      
+      if (!payload || !payload.email) {
+        throw new UnauthorizedError('Invalid Google token');
+      }
+
+      const { email, name, picture } = payload;
+      let user = await this.userRepository.findByEmail(email);
+
+      if (!user) {
+        // Create new user automatically
+        user = await this.userRepository.create({
+          name: name || 'Google User',
+          email: email,
+          role: role,
+          isEmailVerified: true,
+          avatar: picture,
+          isActive: true,
+          password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8),
+        } as any);
+      } else {
+        if (!user.isActive) {
+          throw new UnauthorizedError('User account is deactivated');
+        }
+        if (!user.avatar && picture) {
+          user.avatar = picture;
+          await user.save();
+        }
+      }
+
+      const jwtPayload = { userId: user._id.toString(), role: user.role };
+      const accessToken = generateAccessToken(jwtPayload);
+      const refreshToken = generateRefreshToken(jwtPayload);
+
+      user.refreshToken = refreshToken;
+      await user.save();
+
+      return { user, accessToken, refreshToken };
+    } catch (err) {
+      console.error('Google Auth Error:', err);
+      throw new UnauthorizedError('Google authentication failed');
+    }
   }
 
   async logout(userId: string): Promise<boolean> {

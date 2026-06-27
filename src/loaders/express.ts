@@ -12,7 +12,9 @@ export const loadExpress = (app: Express): void => {
   // Global Middlewares
   app.use(
     cors({
-      origin: '*', // Customize for production
+      origin: function (origin, callback) {
+        callback(null, true);
+      },
       credentials: true,
     })
   );

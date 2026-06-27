@@ -127,7 +127,16 @@ export const resolvers = {
     // --- Admin ---
     adminUsers: async (_parent: any, _args: any, context: any) => {
       checkRole(context, [UserRole.ADMIN]);
-      return userRepository.find({});
+      const { User } = require('../../models/User');
+      return User.find({}).select('+password');
+    },
+    adminBanners: async (_parent: any, _args: any, context: any) => {
+      checkRole(context, [UserRole.ADMIN]);
+      return adminService.getAllBanners();
+    },
+    adminReviews: async (_parent: any, _args: any, context: any) => {
+      checkRole(context, [UserRole.ADMIN]);
+      return adminService.getAllReviews();
     },
     adminProviders: async (_parent: any, _args: any, context: any) => {
       checkRole(context, [UserRole.ADMIN]);
@@ -140,6 +149,17 @@ export const resolvers = {
     adminDashboardStats: async (_parent: any, _args: any, context: any) => {
       checkRole(context, [UserRole.ADMIN]);
       return adminService.getDashboardStats();
+    },
+    publicReviews: async (_parent: any, args: any) => {
+      const limit = args.limit || 3;
+      const { ReviewRepository } = require('../../repositories/review.repository');
+      const repo = new ReviewRepository();
+      return repo.getPublicReviews(limit);
+    },
+    publicBanners: async (_parent: any, _args: any) => {
+      const { BannerRepository } = require('../../repositories/banner.repository');
+      const repo = new BannerRepository();
+      return repo.find({ isActive: true });
     },
   },
 
@@ -210,6 +230,12 @@ export const resolvers = {
     deleteBanner: async (_parent: any, args: any, context: any) => {
       checkRole(context, [UserRole.ADMIN]);
       return adminService.deleteBanner(args.id);
+    },
+
+    // --- Admin Reviews ---
+    deleteReview: async (_parent: any, args: any, context: any) => {
+      checkRole(context, [UserRole.ADMIN]);
+      return adminService.deleteReview(args.id);
     },
 
     // --- Admin Dispute & Verification ---

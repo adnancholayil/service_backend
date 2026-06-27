@@ -151,6 +151,30 @@ export class AuthService {
           isActive: true,
           password: Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8),
         } as any);
+
+        if (role === UserRole.PROVIDER) {
+          let defaultCategory = await this.categoryRepository.findOne({ slug: 'uncategorized' });
+          if (!defaultCategory) {
+            defaultCategory = await this.categoryRepository.create({
+              name: 'Uncategorized',
+              slug: 'uncategorized',
+              isActive: true
+            } as any);
+          }
+
+          await this.providerRepository.create({
+            user: user._id,
+            businessName: name || 'Google User',
+            description: 'New Service Provider (Please update profile)',
+            category: defaultCategory._id as any,
+            address: 'Update your address',
+            location: {
+              type: 'Point',
+              coordinates: [0, 0],
+            },
+            verificationStatus: VerificationStatus.PENDING,
+          } as any);
+        }
       } else {
         if (!user.isActive) {
           throw new UnauthorizedError('User account is deactivated');

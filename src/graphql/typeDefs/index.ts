@@ -45,6 +45,7 @@ export const typeDefs = `#graphql
     isActive: Boolean!
     createdAt: String!
     updatedAt: String!
+    password: String
   }
 
   type Provider {
@@ -250,7 +251,13 @@ export const typeDefs = `#graphql
     adminUsers: [User!]!
     adminProviders: [Provider!]!
     adminDisputes: [Dispute!]!
+    adminBanners: [Banner!]!
+    adminReviews: [Review!]!
     adminDashboardStats: DashboardStats!
+    
+    # Public
+    publicReviews(limit: Int): [Review!]!
+    publicBanners: [Banner!]!
   }
 
   type Mutation {
@@ -284,6 +291,9 @@ export const typeDefs = `#graphql
     createBanner(title: String!, imageUrl: String!, link: String): Banner!
     updateBanner(id: ID!, title: String!, imageUrl: String!, link: String, isActive: Boolean): Banner!
     deleteBanner(id: ID!): Boolean!
+
+    # Admin Reviews
+    deleteReview(id: ID!): Boolean!
 
     # Admin Dispute & Verification
     verifyProvider(providerId: ID!, status: VerificationStatus!): Provider!

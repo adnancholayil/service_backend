@@ -3,6 +3,7 @@ import { BannerRepository } from '../repositories/banner.repository';
 import { DisputeRepository } from '../repositories/dispute.repository';
 import { UserRepository } from '../repositories/user.repository';
 import { BookingRepository } from '../repositories/booking.repository';
+import { ReviewRepository } from '../repositories/review.repository';
 import { ICategory } from '../interfaces/category.interface';
 import { IBanner } from '../interfaces/banner.interface';
 import { IDispute } from '../interfaces/dispute.interface';
@@ -15,6 +16,7 @@ export class AdminService {
   private disputeRepository: DisputeRepository;
   private userRepository: UserRepository;
   private bookingRepository: BookingRepository;
+  private reviewRepository: ReviewRepository;
 
   constructor() {
     this.categoryRepository = new CategoryRepository();
@@ -22,6 +24,7 @@ export class AdminService {
     this.disputeRepository = new DisputeRepository();
     this.userRepository = new UserRepository();
     this.bookingRepository = new BookingRepository();
+    this.reviewRepository = new ReviewRepository();
   }
 
   // --- Category CRUD ---
@@ -112,6 +115,19 @@ export class AdminService {
       disputesCount: disputes.length,
       totalRevenue,
     };
+  }
+
+  // --- Reviews Management ---
+  async getAllReviews(): Promise<any[]> {
+    return this.reviewRepository.find({}, null, null, { createdAt: -1 });
+  }
+
+  async deleteReview(id: string): Promise<boolean> {
+    const deleted = await this.reviewRepository.delete(id);
+    if (!deleted) {
+      throw new NotFoundError('Review not found');
+    }
+    return true;
   }
 }
 

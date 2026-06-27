@@ -36,4 +36,14 @@ export class ReviewRepository extends BaseRepository<IReview> {
       count: result[0].count,
     };
   }
+
+  async getPublicReviews(limit: number): Promise<IReview[]> {
+    return this.model
+      .find({})
+      .populate('customer', 'name avatar')
+      .populate('provider', 'businessName')
+      .sort({ rating: -1, createdAt: -1 })
+      .limit(limit)
+      .exec();
+  }
 }

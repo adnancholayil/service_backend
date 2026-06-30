@@ -53,7 +53,7 @@ export const typeDefs = `#graphql
     user: User!
     businessName: String!
     description: String!
-    category: Category!
+    category: Category
     services: [Service!]!
     location: Location!
     address: String!
@@ -78,7 +78,7 @@ export const typeDefs = `#graphql
   type Service {
     id: ID!
     provider: Provider!
-    category: Category!
+    category: Category
     name: String!
     description: String!
     price: Float!
@@ -249,11 +249,13 @@ export const typeDefs = `#graphql
 
     # Admin
     adminUsers: [User!]!
-    adminProviders: [Provider!]!
-    adminDisputes: [Dispute!]!
     adminBanners: [Banner!]!
     adminReviews: [Review!]!
+    adminProviders: [Provider!]!
+    adminDisputes: [Dispute!]!
     adminDashboardStats: DashboardStats!
+    adminConversations: [Conversation!]!
+    adminMessages(conversationId: ID!, limit: Int, page: Int): [Message!]!
     
     # Public
     publicReviews(limit: Int): [Review!]!
@@ -301,7 +303,7 @@ export const typeDefs = `#graphql
 
     # Services
     createService(category: ID!, name: String!, description: String!, price: Float!, duration: Int, images: [String!]): Service!
-    updateService(id: ID!, name: String, description: String, price: Float, duration: Int, images: [String!], isActive: Boolean): Service!
+    updateService(id: ID!, category: ID, name: String, description: String, price: Float, duration: Int, images: [String!], isActive: Boolean): Service!
     deleteService(id: ID!): Boolean!
     requestPayout(amount: Float!): Boolean!
 
@@ -316,6 +318,7 @@ export const typeDefs = `#graphql
     addReview(bookingId: ID!, rating: Int!, comment: String): Review!
 
     # Chat
+    getOrCreateConversation(userId: ID!): Conversation!
     sendMessage(recipientId: ID!, text: String!, attachments: [String!]): Message!
     triggerTyping(conversationId: ID!, isTyping: Boolean!): Boolean!
 

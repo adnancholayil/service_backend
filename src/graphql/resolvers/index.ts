@@ -150,6 +150,15 @@ export const resolvers = {
       checkRole(context, [UserRole.ADMIN]);
       return adminService.getDashboardStats();
     },
+    adminConversations: async (_parent: any, _args: any, context: any) => {
+      checkRole(context, [UserRole.ADMIN]);
+      return chatService.getAllPlatformConversations();
+    },
+    adminMessages: async (_parent: any, args: any, context: any) => {
+      checkRole(context, [UserRole.ADMIN]);
+      const { conversationId, limit = 50, page = 1 } = args;
+      return chatService.getAdminConversationMessages(conversationId, limit, page);
+    },
     publicReviews: async (_parent: any, args: any) => {
       const limit = args.limit || 3;
       const { ReviewRepository } = require('../../repositories/review.repository');
@@ -336,6 +345,11 @@ export const resolvers = {
     },
 
     // --- Chat ---
+    getOrCreateConversation: async (_parent: any, args: any, context: any) => {
+      checkAuth(context);
+      const { userId } = args;
+      return chatService.getOrCreateConversation(context.user.userId, userId);
+    },
     sendMessage: async (_parent: any, args: any, context: any) => {
       checkAuth(context);
       const { recipientId, text, attachments } = args;
@@ -410,78 +424,106 @@ export const resolvers = {
   },
 
   // --- Sub-Field Resolvers for Nested Queries ---
+  User: {
+    id: (obj: any) => obj._id?.toString() || obj.id?.toString() || obj.toString(),
+  },
+  Category: {
+    id: (obj: any) => obj._id?.toString() || obj.id?.toString() || obj.toString(),
+  },
   Provider: {
+    id: (obj: any) => obj._id?.toString() || obj.id?.toString() || obj.toString(),
     user: async (provider: any) => {
+      if (provider.user && provider.user.name) return provider.user;
       return User.findById(provider.user);
     },
     category: async (provider: any) => {
+      if (provider.category && provider.category.name) return provider.category;
       return Category.findById(provider.category);
     },
     services: async (provider: any) => {
-      return Service.find({ provider: provider.id });
+      return Service.find({ provider: provider.id || provider._id });
     },
   },
 
   Service: {
+    id: (obj: any) => obj._id?.toString() || obj.id?.toString() || obj.toString(),
     provider: async (service: any) => {
+      if (service.provider && service.provider.businessName) return service.provider;
       return Provider.findById(service.provider);
     },
     category: async (service: any) => {
+      if (service.category && service.category.name) return service.category;
       return Category.findById(service.category);
     },
   },
 
   Booking: {
+    id: (obj: any) => obj._id?.toString() || obj.id?.toString() || obj.toString(),
     customer: async (booking: any) => {
+      if (booking.customer && booking.customer.name) return booking.customer;
       return User.findById(booking.customer);
     },
     provider: async (booking: any) => {
+      if (booking.provider && booking.provider.businessName) return booking.provider;
       return Provider.findById(booking.provider);
     },
     service: async (booking: any) => {
+      if (booking.service && booking.service.name) return booking.service;
       return Service.findById(booking.service);
     },
   },
 
   Review: {
+    id: (obj: any) => obj._id?.toString() || obj.id?.toString() || obj.toString(),
     booking: async (review: any) => {
+      if (review.booking && (review.booking.service || review.booking.customer)) return review.booking;
       return Booking.findById(review.booking);
     },
     customer: async (review: any) => {
+      if (review.customer && review.customer.name) return review.customer;
       return User.findById(review.customer);
     },
     provider: async (review: any) => {
+      if (review.provider && review.provider.businessName) return review.provider;
       return Provider.findById(review.provider);
     },
   },
 
   Conversation: {
+    id: (obj: any) => obj._id?.toString() || obj.id?.toString() || obj.toString(),
     participants: async (conversation: any) => {
       return User.find({ _id: { $in: conversation.participants } });
     },
     lastMessage: async (conversation: any) => {
       if (!conversation.lastMessage) return null;
+      if (conversation.lastMessage.content) return conversation.lastMessage;
       return Message.findById(conversation.lastMessage);
     },
   },
 
   Message: {
+    id: (obj: any) => obj._id?.toString() || obj.id?.toString() || obj.toString(),
     sender: async (message: any) => {
+      if (message.sender && message.sender.name) return message.sender;
       return User.findById(message.sender);
     },
   },
 
   Notification: {
+    id: (obj: any) => obj._id?.toString() || obj.id?.toString() || obj.toString(),
     recipient: async (notification: any) => {
+      if (notification.recipient && notification.recipient.name) return notification.recipient;
       return User.findById(notification.recipient);
     },
     sender: async (notification: any) => {
       if (!notification.sender) return null;
+      if (notification.sender.name) return notification.sender;
       return User.findById(notification.sender);
     },
   },
 
   Dispute: {
+    id: (obj: any) => obj._id?.toString() || obj.id?.toString() || obj.toString(),
     booking: async (dispute: any) => {
       return Booking.findById(dispute.booking);
     },

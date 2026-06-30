@@ -62,9 +62,17 @@ export class ChatService {
     return this.conversationRepository.findUserConversations(userId);
   }
 
+  async getAllPlatformConversations(): Promise<IConversation[]> {
+    return this.conversationRepository.findAllConversations();
+  }
+
   async getConversationMessages(conversationId: string, userId: string, limit = 50, page = 1): Promise<IMessage[]> {
     // Mark unread messages in this conversation as read
     await this.messageRepository.markAsRead(conversationId, userId);
+    return this.messageRepository.findByConversationId(conversationId, limit, page);
+  }
+
+  async getAdminConversationMessages(conversationId: string, limit = 50, page = 1): Promise<IMessage[]> {
     return this.messageRepository.findByConversationId(conversationId, limit, page);
   }
 

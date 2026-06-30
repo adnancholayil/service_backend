@@ -26,4 +26,16 @@ export class ConversationRepository extends BaseRepository<IConversation> {
       .sort({ updatedAt: -1 })
       .exec();
   }
+
+  async findAllConversations(): Promise<IConversation[]> {
+    return this.model
+      .find({})
+      .populate('participants', 'name email avatar role')
+      .populate({
+        path: 'lastMessage',
+        populate: { path: 'sender', select: 'name' },
+      })
+      .sort({ updatedAt: -1 })
+      .exec();
+  }
 }

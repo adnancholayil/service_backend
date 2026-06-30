@@ -24,6 +24,7 @@ export const loadExpress = (app: Express): void => {
     helmet({
       contentSecurityPolicy: false,
       crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: false,
     })
   );
 
@@ -63,11 +64,11 @@ export const loadExpress = (app: Express): void => {
   app.post(
     '/api/upload',
     authenticate,
-    upload.single('image'),
+    upload.single('file'),
     async (req: Request, res: Response, next) => {
       try {
         if (!req.file) {
-          throw new ValidationError('Please upload an image file');
+          throw new ValidationError('Please upload a file');
         }
 
         const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;

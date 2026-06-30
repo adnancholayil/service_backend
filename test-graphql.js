@@ -1,23 +1,12 @@
 const http = require('http');
 
 async function testBackend() {
-  const loginData = JSON.stringify({
-    query: `
-      mutation {
-        login(email: "admin@servicehub.com", password: "adminpassword123") {
-          accessToken
-        }
-      }
-    `
-  });
-
-  const getResponse = (data, token = null) => {
+  const getResponse = (data) => {
     return new Promise((resolve, reject) => {
       const headers = {
         'Content-Type': 'application/json',
-        'Content-Length': data.length
+        'Content-Length': Buffer.byteLength(data)
       };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
 
       const options = {
         hostname: 'localhost',
@@ -39,37 +28,25 @@ async function testBackend() {
   };
 
   try {
-    const loginRes = await getResponse(loginData);
-    const token = loginRes.data?.login?.accessToken;
-    console.log('Token received:', !!token);
-
-    if (token) {
-      const createData = JSON.stringify({
-        query: `
-          mutation {
-            createBanner(title: "Test Banner", imageUrl: "https://test.com/img.jpg") {
-              id
-              title
-            }
+    const queryData = JSON.stringify({
+      query: `
+        query GetHomeData($longitude: Float, $latitude: Float) {
+          categories { id name slug icon }
+          providers(longitude: $longitude, latitude: $latitude) {
+            id businessName description rating reviewsCount
+            user { name avatar }
+            category { name }
+            services { id name description price category { name } }
           }
-        `
-      });
-      const createRes = await getResponse(createData, token);
-      console.log('Create Banner Response:', JSON.stringify(createRes, null, 2));
-
-      const queryData = JSON.stringify({
-        query: `
-          query {
-            adminBanners {
-              id
-              title
-            }
+          publicReviews(limit: 3) {
+            id rating comment createdAt customer { name avatar }
           }
-        `
-      });
-      const queryRes = await getResponse(queryData, token);
-      console.log('Query Banners Response:', JSON.stringify(queryRes, null, 2));
-    }
+          publicBanners { id title imageUrl link }
+        }
+      `
+    });
+    const queryRes = await getResponse(queryData);
+    console.log('Query Response:', JSON.stringify(queryRes, null, 2));
   } catch (err) {
     console.error(err);
   }

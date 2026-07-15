@@ -41,6 +41,7 @@ export const typeDefs = `#graphql
     email: String!
     role: UserRole!
     isEmailVerified: Boolean!
+    phone: String
     avatar: String
     isActive: Boolean!
     createdAt: String!
@@ -290,6 +291,7 @@ export const typeDefs = `#graphql
     register(
       name: String!
       email: String!
+      phone: String
       password: String!
       role: UserRole!
       providerDetails: ProviderRegisterInput

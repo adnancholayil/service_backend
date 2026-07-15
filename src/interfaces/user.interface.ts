@@ -4,6 +4,7 @@ import { UserRole } from '../constants';
 export interface IUser extends Document {
   name: string;
   email: string;
+  phone?: string;
   password?: string;
   role: UserRole;
   isEmailVerified: boolean;

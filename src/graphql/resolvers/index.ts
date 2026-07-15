@@ -183,8 +183,8 @@ export const resolvers = {
   Mutation: {
     // --- Auth ---
     register: async (_parent: any, args: any) => {
-      const { name, email, password, role, providerDetails } = args;
-      return authService.register({ name, email, password, role }, providerDetails);
+      const { name, email, phone, password, role, providerDetails } = args;
+      return authService.register({ name, email, phone, password, role }, providerDetails);
     },
     login: async (_parent: any, args: any) => {
       return authService.login(args.email, args.password);

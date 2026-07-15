@@ -14,17 +14,15 @@ export class AuthService {
   private userRepository: UserRepository;
   private providerRepository: ProviderRepository;
   private categoryRepository: CategoryRepository;
-  private googleClient: OAuth2Client;
 
   constructor() {
     this.userRepository = new UserRepository();
     this.providerRepository = new ProviderRepository();
     this.categoryRepository = new CategoryRepository();
-    this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'placeholder');
   }
 
   async register(
-    userData: { name: string; email: string; password?: string; role: UserRole },
+    userData: { name: string; email: string; phone?: string; password?: string; role: UserRole },
     providerData?: {
       businessName: string;
       description: string;
@@ -131,9 +129,10 @@ export class AuthService {
     role: UserRole = UserRole.CUSTOMER
   ): Promise<{ user: IUser; accessToken: string; refreshToken: string }> {
     try {
-      const ticket = await this.googleClient.verifyIdToken({
+      const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+      const ticket = await googleClient.verifyIdToken({
         idToken: token,
-        audience: process.env.GOOGLE_CLIENT_ID || 'placeholder',
+        audience: process.env.GOOGLE_CLIENT_ID,
       });
       const payload = ticket.getPayload();
       

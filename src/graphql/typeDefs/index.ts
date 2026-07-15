@@ -60,7 +60,13 @@ export const typeDefs = `#graphql
     verificationStatus: VerificationStatus!
     rating: Float!
     reviewsCount: Int!
+    phone: String!
+    whatsapp: String
+    subscriptionPlan: String!
+    subscriptionStatus: String!
+    subscriptionExpiry: String
     banner: String
+    portfolio: [String!]
     createdAt: String!
     updatedAt: String!
   }
@@ -197,6 +203,17 @@ export const typeDefs = `#graphql
     totalRevenue: Float!
   }
 
+  type Payment {
+    id: ID!
+    provider: Provider!
+    plan: String!
+    amount: Float!
+    method: String!
+    status: String!
+    transactionId: String
+    createdAt: String!
+  }
+
   type LocationUpdatedPayload {
     providerId: ID!
     coordinates: [Float!]!
@@ -207,6 +224,8 @@ export const typeDefs = `#graphql
     description: String!
     category: ID!
     address: String!
+    phone: String!
+    whatsapp: String
     coordinates: [Float!]!
   }
 
@@ -215,6 +234,9 @@ export const typeDefs = `#graphql
     pendingTasks: Int!
     completedJobs: Int!
     averageRating: Float!
+    subscriptionPlan: String
+    subscriptionStatus: String
+    subscriptionExpiry: String
   }
 
   type Query {
@@ -256,6 +278,7 @@ export const typeDefs = `#graphql
     adminDashboardStats: DashboardStats!
     adminConversations: [Conversation!]!
     adminMessages(conversationId: ID!, limit: Int, page: Int): [Message!]!
+    getPaymentsReport: [Payment!]!
     
     # Public
     publicReviews(limit: Int): [Review!]!
@@ -282,6 +305,7 @@ export const typeDefs = `#graphql
     changePassword(oldPassword: String!, newPassword: String!): Boolean!
 
     # Users / Providers
+    updateUserAvatar(avatar: String!): User!
     updateLocation(longitude: Float!, latitude: Float!): Provider!
 
     # Admin Categories CRUD
@@ -308,7 +332,9 @@ export const typeDefs = `#graphql
     requestPayout(amount: Float!): Boolean!
 
     # Provider
-    updateProviderProfile(businessName: String, description: String, address: String): Provider!
+    updateProviderProfile(businessName: String, description: String, address: String, portfolio: [String!]): Provider!
+    selectSubscriptionPlan(plan: String!): Provider!
+    processPayment(method: String!): Provider!
 
     # Bookings
     createBooking(serviceId: ID!, bookingDate: String!, address: String!, coordinates: [Float!]!, notes: String): Booking!

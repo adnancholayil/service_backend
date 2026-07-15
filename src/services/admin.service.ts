@@ -119,7 +119,7 @@ export class AdminService {
 
   // --- Reviews Management ---
   async getAllReviews(): Promise<any[]> {
-    return this.reviewRepository.find({}, null, null, { createdAt: -1 });
+    return this.reviewRepository.find({}, undefined, undefined, { createdAt: -1 });
   }
 
   async deleteReview(id: string): Promise<boolean> {

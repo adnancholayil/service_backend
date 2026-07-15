@@ -25,6 +25,7 @@ export const loadExpress = (app: Express): void => {
       contentSecurityPolicy: false,
       crossOriginEmbedderPolicy: false,
       crossOriginResourcePolicy: false,
+      crossOriginOpenerPolicy: false,
     })
   );
 

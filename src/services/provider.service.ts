@@ -7,6 +7,7 @@ import { IReview } from '../interfaces/review.interface';
 import { VerificationStatus, SOCKET_EVENTS } from '../constants';
 import { NotFoundError, ValidationError } from '../utils/errors';
 import { eventBus } from '../utils/eventBus';
+import { Payment, PaymentStatus, PaymentMethod } from '../models/Payment';
 
 export class ProviderService {
   private providerRepository: ProviderRepository;
@@ -58,16 +59,69 @@ export class ProviderService {
     return result.data;
   }
 
-  async updateProfile(providerUserId: string, businessName?: string, description?: string, address?: string): Promise<IProvider> {
+  async updateProfile(providerUserId: string, businessName?: string, description?: string, address?: string, portfolio?: string[]): Promise<IProvider> {
     const provider = await this.providerRepository.findByUserId(providerUserId);
     if (!provider) {
       throw new NotFoundError('Provider profile not found');
     }
 
-    if (businessName) provider.businessName = businessName;
-    if (description) provider.description = description;
-    if (address) provider.address = address;
+    if (businessName !== undefined) provider.businessName = businessName;
+    if (description !== undefined) provider.description = description;
+    if (address !== undefined) provider.address = address;
+    if (portfolio !== undefined) provider.portfolio = portfolio;
 
+    await provider.save();
+    return provider;
+  }
+
+  async selectSubscriptionPlan(providerUserId: string, plan: string): Promise<IProvider> {
+    const provider = await this.providerRepository.findByUserId(providerUserId);
+    if (!provider) {
+      throw new NotFoundError('Provider profile not found');
+    }
+    
+    const validPlans = ['TRIAL', 'MONTHLY', 'YEARLY', 'NONE'];
+    if (!validPlans.includes(plan)) {
+      throw new ValidationError('Invalid subscription plan');
+    }
+
+    provider.subscriptionPlan = plan as any;
+    
+    if (plan === 'TRIAL') {
+      provider.subscriptionStatus = 'ACTIVE' as any;
+    } else {
+      provider.subscriptionStatus = 'PENDING_PAYMENT' as any;
+    }
+    
+    await provider.save();
+    return provider;
+  }
+
+  async processPayment(providerUserId: string, method: string): Promise<IProvider> {
+    const provider = await this.providerRepository.findByUserId(providerUserId);
+    if (!provider) {
+      throw new NotFoundError('Provider profile not found');
+    }
+    
+    if (provider.subscriptionStatus === 'ACTIVE') {
+      return provider;
+    }
+
+    let amount = 0;
+    if (provider.subscriptionPlan === 'YEARLY') amount = 4999;
+    if (provider.subscriptionPlan === 'MONTHLY') amount = 499;
+
+    const payment = new Payment({
+      provider: provider._id,
+      plan: provider.subscriptionPlan,
+      amount: amount,
+      method: method === 'razorpay' ? PaymentMethod.RAZORPAY : PaymentMethod.OFFLINE,
+      status: method === 'offline' ? PaymentStatus.PENDING_VERIFICATION : PaymentStatus.SUCCESS,
+      transactionId: `TXN-${Date.now()}`
+    });
+    await payment.save();
+
+    provider.subscriptionStatus = 'ACTIVE' as any;
     await provider.save();
     return provider;
   }
@@ -141,7 +195,10 @@ export class ProviderService {
       totalEarnings,
       pendingTasks,
       completedJobs,
-      averageRating: provider.rating || 0
+      averageRating: provider.rating || 0,
+      subscriptionPlan: provider.subscriptionPlan,
+      subscriptionStatus: provider.subscriptionStatus,
+      subscriptionExpiry: provider.subscriptionExpiry ? provider.subscriptionExpiry.toISOString() : null,
     };
   }
 

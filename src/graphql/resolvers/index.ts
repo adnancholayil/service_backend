@@ -18,6 +18,7 @@ import { Provider } from '../../models/Provider';
 import { Category } from '../../models/Category';
 import { Service } from '../../models/Service';
 import { Booking } from '../../models/Booking';
+import { Payment } from '../../models/Payment';
 import { Message } from '../../models/Message';
 import { UnauthorizedError, ForbiddenError, ValidationError } from '../../utils/errors';
 
@@ -159,6 +160,13 @@ export const resolvers = {
       const { conversationId, limit = 50, page = 1 } = args;
       return chatService.getAdminConversationMessages(conversationId, limit, page);
     },
+    getPaymentsReport: async (_parent: any, _args: any, context: any) => {
+      checkRole(context, [UserRole.ADMIN]);
+      return Payment.find({}).populate({
+        path: 'provider',
+        populate: { path: 'user', select: '-password' }
+      }).sort({ createdAt: -1 });
+    },
     publicReviews: async (_parent: any, args: any) => {
       const limit = args.limit || 3;
       const { ReviewRepository } = require('../../repositories/review.repository');
@@ -210,7 +218,10 @@ export const resolvers = {
       checkRole(context, [UserRole.PROVIDER]);
       return providerService.updateLocation(context.user.userId, args.longitude, args.latitude);
     },
-
+    updateUserAvatar: async (_parent: any, args: any, context: any) => {
+      checkAuth(context);
+      return userRepository.update(context.user.userId, { avatar: args.avatar });
+    },
     // --- Admin Categories CRUD ---
     createCategory: async (_parent: any, args: any, context: any) => {
       checkRole(context, [UserRole.ADMIN]);
@@ -316,7 +327,15 @@ export const resolvers = {
     },
     updateProviderProfile: async (_parent: any, args: any, context: any) => {
       checkRole(context, [UserRole.PROVIDER]);
-      return providerService.updateProfile(context.user.userId, args.businessName, args.description, args.address);
+      return providerService.updateProfile(context.user.userId, args.businessName, args.description, args.address, args.portfolio);
+    },
+    selectSubscriptionPlan: async (_parent: any, args: any, context: any) => {
+      checkRole(context, [UserRole.PROVIDER]);
+      return providerService.selectSubscriptionPlan(context.user.userId, args.plan);
+    },
+    processPayment: async (_parent: any, args: any, context: any) => {
+      checkRole(context, [UserRole.PROVIDER]);
+      return providerService.processPayment(context.user.userId, args.method);
     },
 
     // --- Bookings ---

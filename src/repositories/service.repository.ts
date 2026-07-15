@@ -1,6 +1,8 @@
 import { BaseRepository } from './base.repository';
 import { IService } from '../interfaces/service.interface';
 import { Service } from '../models/Service';
+import { Provider } from '../models/Provider';
+import { VerificationStatus } from '../constants';
 
 export class ServiceRepository extends BaseRepository<IService> {
   constructor() {
@@ -12,7 +14,13 @@ export class ServiceRepository extends BaseRepository<IService> {
   }
 
   async searchGlobal(category?: string, search?: string): Promise<IService[]> {
-    const filter: any = { isActive: true };
+    const verifiedProviders = await Provider.find({ verificationStatus: VerificationStatus.VERIFIED }).select('_id').lean();
+    const verifiedProviderIds = verifiedProviders.map(p => p._id);
+
+    const filter: any = { 
+      isActive: true,
+      provider: { $in: verifiedProviderIds }
+    };
     if (category && category !== 'all') {
       filter.category = category;
     }

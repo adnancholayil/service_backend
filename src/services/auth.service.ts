@@ -30,6 +30,8 @@ export class AuthService {
       description: string;
       category: string;
       address: string;
+      phone: string;
+      whatsapp?: string;
       coordinates: [number, number]; // [longitude, latitude]
     }
   ): Promise<{ user: IUser; accessToken: string; refreshToken: string }> {
@@ -74,6 +76,8 @@ export class AuthService {
         description: providerData.description,
         category: finalCategoryId as any,
         address: providerData.address,
+        phone: providerData.phone,
+        whatsapp: providerData.whatsapp,
         location: {
           type: 'Point',
           coordinates: providerData.coordinates,
@@ -168,6 +172,7 @@ export class AuthService {
             description: 'New Service Provider (Please update profile)',
             category: defaultCategory._id as any,
             address: 'Update your address',
+            phone: 'Update phone number',
             location: {
               type: 'Point',
               coordinates: [0, 0],

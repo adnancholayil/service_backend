@@ -12,10 +12,16 @@ export interface IProvider extends Document {
     coordinates: [number, number]; // [longitude, latitude]
   };
   address: string;
+  phone: string;
+  whatsapp?: string;
+  subscriptionPlan: 'NONE' | 'TRIAL' | 'MONTHLY' | 'YEARLY';
+  subscriptionStatus: 'PENDING_PAYMENT' | 'ACTIVE' | 'INACTIVE';
+  subscriptionExpiry?: Date;
   verificationStatus: VerificationStatus;
   rating: number;
   reviewsCount: number;
   banner?: string;
+  portfolio?: string[];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -2,6 +2,19 @@ import { Schema, model } from 'mongoose';
 import { IProvider } from '../interfaces/provider.interface';
 import { VerificationStatus } from '../constants';
 
+export enum SubscriptionPlan {
+  NONE = 'NONE',
+  TRIAL = 'TRIAL',
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY',
+}
+
+export enum SubscriptionStatus {
+  PENDING_PAYMENT = 'PENDING_PAYMENT',
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+}
+
 const ProviderSchema = new Schema<IProvider>(
   {
     user: {
@@ -62,9 +75,32 @@ const ProviderSchema = new Schema<IProvider>(
       type: Number,
       default: 0,
     },
+    phone: {
+      type: String,
+      required: [true, 'Phone number is required'],
+    },
+    whatsapp: {
+      type: String,
+    },
+    subscriptionPlan: {
+      type: String,
+      enum: Object.values(SubscriptionPlan),
+      default: SubscriptionPlan.NONE,
+    },
+    subscriptionStatus: {
+      type: String,
+      enum: Object.values(SubscriptionStatus),
+      default: SubscriptionStatus.PENDING_PAYMENT,
+    },
+    subscriptionExpiry: {
+      type: Date,
+    },
     banner: {
       type: String,
     },
+    portfolio: [{
+      type: String,
+    }],
   },
   {
     timestamps: true,

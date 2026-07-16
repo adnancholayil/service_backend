@@ -54,9 +54,14 @@ export class ProviderService {
     return provider;
   }
 
-  async getTopProviders(category?: string): Promise<IProvider[]> {
-    const result = await this.providerRepository.findTopRated(category);
-    return result.data;
+  async getTopProviders(category?: string, limit = 12, page = 1) {
+    const result = await this.providerRepository.findTopRated(category, limit, page);
+    return {
+      data: result.data,
+      total: result.total,
+      page,
+      totalPages: Math.ceil(result.total / limit)
+    };
   }
 
   async updateProfile(providerUserId: string, businessName?: string, description?: string, address?: string, portfolio?: string[]): Promise<IProvider> {
@@ -127,9 +132,14 @@ export class ProviderService {
   }
 
 
-  async getProvidersNear(longitude: number, latitude: number, maxDistance?: number, category?: string): Promise<IProvider[]> {
-    const result = await this.providerRepository.findNearLocation(longitude, latitude, maxDistance, category);
-    return result.data;
+  async getProvidersNear(longitude: number, latitude: number, maxDistance?: number, category?: string, limit = 12, page = 1) {
+    const result = await this.providerRepository.findNearLocation(longitude, latitude, maxDistance, category, limit, page);
+    return {
+      data: result.data,
+      total: result.total,
+      page,
+      totalPages: Math.ceil(result.total / limit)
+    };
   }
 
   async addReview(bookingId: string, customerId: string, rating: number, comment?: string): Promise<IReview> {

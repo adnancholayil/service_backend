@@ -13,7 +13,12 @@ export class ServiceRepository extends BaseRepository<IService> {
     return this.model.find({ provider: providerId, isActive: true }).populate('category').exec();
   }
 
-  async searchGlobal(category?: string, search?: string): Promise<IService[]> {
+  async searchGlobal(
+    category?: string,
+    search?: string,
+    limit = 12,
+    page = 1
+  ): Promise<{ data: IService[]; total: number }> {
     const verifiedProviders = await Provider.find({ verificationStatus: VerificationStatus.VERIFIED }).select('_id').lean();
     const verifiedProviderIds = verifiedProviders.map(p => p._id);
 
@@ -21,6 +26,7 @@ export class ServiceRepository extends BaseRepository<IService> {
       isActive: true,
       provider: { $in: verifiedProviderIds }
     };
+    
     if (category && category !== 'all') {
       filter.category = category;
     }
@@ -30,13 +36,20 @@ export class ServiceRepository extends BaseRepository<IService> {
         { description: { $regex: search, $options: 'i' } },
       ];
     }
-    return this.model
+
+    const data = await this.model
       .find(filter)
+      .skip((page - 1) * limit)
+      .limit(limit)
       .populate('category')
       .populate({
         path: 'provider',
         populate: { path: 'user', select: '-password' }
       })
       .exec();
+
+    const total = await this.model.countDocuments(filter);
+
+    return { data, total };
   }
 }

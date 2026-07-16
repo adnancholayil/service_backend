@@ -52,11 +52,11 @@ export const resolvers = {
 
     // --- Providers ---
     providers: async (_parent: any, args: any) => {
-      const { longitude, latitude, maxDistance, category } = args;
+      const { longitude, latitude, maxDistance, category, limit = 12, page = 1 } = args;
       if (longitude !== undefined && latitude !== undefined && longitude !== 0 && latitude !== 0) {
-        return providerService.getProvidersNear(longitude, latitude, maxDistance, category);
+        return providerService.getProvidersNear(longitude, latitude, maxDistance, category, limit, page);
       }
-      return providerService.getTopProviders(category);
+      return providerService.getTopProviders(category, limit, page);
     },
     providerProfile: async (_parent: any, args: any) => {
       return providerRepository.findByUserId(args.userId);
@@ -91,7 +91,15 @@ export const resolvers = {
         const cat = await categoryRepository.findOne({ slug: categoryId });
         if (cat) categoryId = cat._id.toString();
       }
-      return serviceRepository.searchGlobal(categoryId, args.search);
+      const limit = args.limit || 12;
+      const page = args.page || 1;
+      const result = await serviceRepository.searchGlobal(categoryId, args.search, limit, page);
+      return {
+        data: result.data,
+        total: result.total,
+        page,
+        totalPages: Math.ceil(result.total / limit)
+      };
     },
 
     // --- Bookings ---

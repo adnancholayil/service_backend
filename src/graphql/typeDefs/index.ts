@@ -240,12 +240,26 @@ export const typeDefs = `#graphql
     subscriptionExpiry: String
   }
 
+  type PaginatedProviders {
+    data: [Provider!]!
+    total: Int!
+    page: Int!
+    totalPages: Int!
+  }
+
+  type PaginatedServices {
+    data: [Service!]!
+    total: Int!
+    page: Int!
+    totalPages: Int!
+  }
+
   type Query {
     # Auth & Users
     me: User
 
     # Providers
-    providers(longitude: Float, latitude: Float, maxDistance: Float, category: ID): [Provider!]!
+    providers(longitude: Float, latitude: Float, maxDistance: Float, category: ID, limit: Int, page: Int): PaginatedProviders!
     providerDetails(id: ID!): Provider
     providerProfile(userId: ID!): Provider
     providerReviews(providerUserId: ID!): [Review!]!
@@ -257,7 +271,7 @@ export const typeDefs = `#graphql
     # Services
     services(providerId: ID!): [Service!]!
     serviceDetails(id: ID!): Service
-    globalServices(category: ID, search: String): [Service!]!
+    globalServices(category: ID, search: String, limit: Int, page: Int): PaginatedServices!
 
     # Bookings
     bookings: [Booking!]!

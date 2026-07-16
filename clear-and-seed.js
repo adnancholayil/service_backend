@@ -62,14 +62,17 @@ async function clearAndSeed() {
     );
     console.log(`Successfully seeded ${Object.keys(seededCats.insertedIds).length} standard categories.`);
 
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@servicehub.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'adminpassword123';
+
     console.log('Hashing admin password...');
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash('adminpassword123', salt);
+    const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
     console.log('Seeding primary Admin account...');
     await db.collection('users').insertOne({
       name: 'Platform Admin',
-      email: 'admin@servicehub.com',
+      email: adminEmail,
       password: hashedPassword,
       role: 'ADMIN',
       isEmailVerified: true,
@@ -78,8 +81,8 @@ async function clearAndSeed() {
     });
     console.log('Successfully created Admin account!');
     console.log('----------------------------------------------------');
-    console.log('Admin Email: admin@servicehub.com');
-    console.log('Admin Password: adminpassword123');
+    console.log(`Admin Email: ${adminEmail}`);
+    console.log('Admin Password: [SECRET (SET IN ENV)]');
     console.log('----------------------------------------------------');
 
   } catch (error) {

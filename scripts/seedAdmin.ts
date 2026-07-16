@@ -14,17 +14,19 @@ async function run() {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to DB');
 
-    const email = 'admin@servicehub.com';
+    const email = process.env.ADMIN_EMAIL || 'admin@servicehub.com';
+    const password = process.env.ADMIN_PASSWORD || 'adminpassword123';
+    
     const existingAdmin = await User.findOne({ email });
     if (existingAdmin) {
-      console.log('Admin already exists. We will update the password to adminpassword123');
-      existingAdmin.password = 'adminpassword123';
+      console.log(`Admin already exists. We will update the password to the one configured in ENV.`);
+      existingAdmin.password = password;
       await existingAdmin.save();
     } else {
       const admin = new User({
         name: 'Platform Admin',
         email,
-        password: 'adminpassword123',
+        password: password,
         role: UserRole.ADMIN,
         isEmailVerified: true
       });
